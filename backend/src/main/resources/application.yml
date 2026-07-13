@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: aiseatbooking
+  datasource:
+    url: jdbc:postgresql://localhost:5433/seatbooking
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # This can be configured for Clerk JWT verification
+          issuer-uri: https://cosmic-panda-46.accounts.dev
+          # For local testing, we can override security using a custom SecurityFilterChain bean
+
+logging:
+  level:
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

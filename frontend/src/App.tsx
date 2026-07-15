@@ -73,7 +73,7 @@ const App: React.FC = () => {
         .subscribe();
 
       return () => {
-        supabase.removeChannel(channel);
+        supabase?.removeChannel(channel);
       };
     } else {
       // Fallback: poll every 3 seconds

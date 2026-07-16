@@ -16,8 +16,8 @@ In high-demand booking scenarios (such as concert ticket sales), multiple users 
 ### Real-Time Synchronization
 - **Live Updates:** Integrates Supabase Realtime to broadcast seat state changes (Available, Held, Booked) to all connected clients instantly, preventing users from attempting to book seats that were just taken.
 
-### AI Orchestration
-- **Natural Language Interface:** Includes an AI agent that parses user intent from natural language and executes booking workflows via the standard API, ensuring that AI-driven actions follow the same rigorous locking logic as human actions.
+### Natural Language Booking Assistant
+- **Conversational Seat Selection:** Includes a local natural language processing assistant that parses user intent (movie/event name, seat numbers, or quantities) from plain English and executes holds via the standard API, ensuring that conversational actions follow the same database locking and concurrency rules as manual bookings.
 
 ## Technology Stack
 
@@ -25,7 +25,7 @@ In high-demand booking scenarios (such as concert ticket sales), multiple users 
 - **Data & Caching:** PostgreSQL, Redis
 - **Frontend:** React, TypeScript, Vite, Vanilla CSS
 - **Real-time:** Supabase (PostgreSQL Change Data Capture)
-- **AI:** Claude API
+- **Natural Language Parsing:** Local Regex Heuristic Engine (zero-cost, low-latency)
 - **Infrastructure:** Docker, Docker Compose
 
 ## Local Setup

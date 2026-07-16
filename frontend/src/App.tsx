@@ -38,6 +38,10 @@ const App: React.FC = () => {
   // Idempotency key (persists across checkout retries)
   const [idempotencyKey, setIdempotencyKey] = useState<string>('');
 
+  // Payment details for confirmation ticket
+  const [lastBookingCardholder, setLastBookingCardholder] = useState('');
+  const [lastBookingCardNumber, setLastBookingCardNumber] = useState('');
+
   // Fetch seats and set up real-time subscription or polling
   const refreshSeats = () => {
     if (!selectedEvent) return;
@@ -134,21 +138,23 @@ const App: React.FC = () => {
     }
   };
 
-  const handleConfirmBooking = async () => {
+  const handleConfirmBooking = async (cardholderName: string, cardNumber: string) => {
     if (!activeHoldId || !selectedEvent) return;
     setIsProcessing(true);
     setError(null);
     try {
+      // Pass the individual seat ticket price (50.0) as expected by the backend
       const result = await api.confirmBooking(
         activeHoldId,
-        heldSeatIds.length * 50.0,
+        50.0,
         idempotencyKey
       );
+      setLastBookingCardholder(cardholderName);
+      const cleanCard = cardNumber.replace(/\s/g, '');
+      const last4 = cleanCard.slice(-4);
+      setLastBookingCardNumber(last4 ? `•••• •••• •••• ${last4}` : '');
       setBookingResult(result);
       setScreen('confirmation');
-      setHeldSeatIds([]);
-      setActiveHoldId(null);
-      setHoldExpiresAt(null);
     } catch (err: any) {
       setError(err.message || 'Booking failed. Please try again.');
     } finally {
@@ -294,10 +300,17 @@ const App: React.FC = () => {
             booking={bookingResult}
             seats={getSelectedSeatsMetadata().map(s => s.label)}
             totalPrice={heldSeatIds.length * 50.0}
+            cardholderName={lastBookingCardholder}
+            cardNumberMasked={lastBookingCardNumber}
             onBack={() => {
               setScreen('events');
               setSelectedEvent(null);
               setBookingResult(null);
+              setHeldSeatIds([]);
+              setActiveHoldId(null);
+              setHoldExpiresAt(null);
+              setLastBookingCardholder('');
+              setLastBookingCardNumber('');
             }}
           />
         )}

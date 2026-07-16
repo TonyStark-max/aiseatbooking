@@ -55,13 +55,21 @@ To prevent the "stale UI" problem (where a user clicks a seat that was just take
 - **Flow:** PostgreSQL $ightarrow$ Supabase Realtime $ightarrow$ Frontend (React).
 - **Implementation:** The frontend subscribes to the `seats` table. Whenever a row is updated in the database, Supabase pushes the new state to all active WebSocket connections. This ensures that the "source of truth" (the database) is always reflected in the user interface with sub-second latency.
 
-## AI Orchestration Layer
+## Natural Language Booking Assistant
 
-The AI agent is designed as a **client of the existing API**, not a bypass.
+Instead of using an external cloud LLM (such as Anthropic Claude or OpenAI), the conversational feature is built around an **offline pattern matching and heuristic NLP engine** running natively on the Spring Boot backend (`AiOrchestrationController`).
 
-- **Intent Parsing:** An LLM (Claude) interprets natural language (e.g., *"Find me a seat for Dune"*) and extracts entities (Event, Seat Count, Preferences).
-- **Tool Execution:** The AI agent is provided with "tools" that map directly to the `SeatHoldService` and `EventService`. 
-- **Safety:** Because the AI uses the `POST /api/holds` endpoint, every AI-suggested reservation is subject to the same Redis TTL and database locking constraints as a manual user booking.
+- **Intent & Movie Parsing:** It scans the user's natural language input and dynamically matches keywords against active event/movie titles retrieved from the database.
+- **Seat Coordinates Parsing:** Regex patterns (such as `\b([a-eA-E][1-8])\b`) are used to extract specific coordinates (e.g. A1, C3).
+- **Quantity Parsing:** Heuristics look for quantity words or numbers (e.g. "two", "three", "couple") to automatically suggest adjacent seating layouts.
+- **API Client Flow:** Like a human user, the assistant behaves as a standard client of the `SeatHoldService` and the `/api/holds` endpoint, preserving the exact same Redis locking, TTL, and pessimistic database lock behaviors.
+- **Limitations:**
+  - The engine operates within a defined grammar of expected inputs (movie names, seat names, quantity terms).
+  - It does not support arbitrary phrasing or general open-ended conversation outside the scope of ticket booking.
+- **Design Rationale:**
+  - **Zero Cost:** No subscription or tokens required for external API requests.
+  - **Low Latency:** Instant response time (sub-millisecond parsing) by avoiding external network hops.
+  - **Deterministic:** No risk of hallucinated seat coordinate suggestions or random conversational deviations.
 
 ## Complexity Analysis & Trade-offs
 
@@ -70,3 +78,4 @@ The AI agent is designed as a **client of the existing API**, not a bypass.
 | **Redis vs. DB for Holds** | **Pro:** Much higher throughput and lower DB contention. **Con:** Adds a dependency on a distributed cache and requires synchronization logic. |
 | **Pessimistic vs. Optimistic Locking** | **Pro:** Guaranteed consistency in high-contention scenarios. **Con:** Higher latency for the specific thread holding the lock. |
 | **Supabase vs. Polling** | **Pro:** Extremely low latency and reduced network overhead. **Con:** Increased architectural complexity and WebSocket management. |
+| **Local NLP vs. Cloud LLM** | **Pro:** Zero token cost, sub-millisecond local response, and 100% deterministic (no hallucination). **Con:** Less flexible for complex language structures, restricted to a predefined input grammar. |

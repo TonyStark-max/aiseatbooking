@@ -56,12 +56,7 @@ public class BookingService {
         try {
             booking = bookingTransactionService.processBookingTransaction(holdData, totalAmount);
         } catch (PaymentFailedException e) {
-            log.warn("Payment failed during booking. Initiating compensating transaction to release seats for hold {}", holdId);
-            try {
-                seatHoldService.releaseHold(holdId);
-            } catch (Exception ex) {
-                log.error("Error during compensating transaction release for hold {}", holdId, ex);
-            }
+            log.warn("Payment failed during booking. Hold {} remains active until TTL expiry.", holdId);
             throw e;
         }
 

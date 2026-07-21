@@ -1,8 +1,8 @@
 # Natural Language Ticket Booking System — System Design Document
 
-**Status:** Implemented
-**Owner:** [Your name]
-**Last updated:** [date]
+**Status:** Ready to Deploy
+**Owner:** Somasekhar Thupakula
+**Last updated:** 21-07-26
 
 ---
 
